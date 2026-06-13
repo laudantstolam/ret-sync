@@ -36,7 +36,6 @@ else:
     from PySide2.QtGui import QKeySequence
 
 from binaryninjaui import UIAction, UIActionHandler
-from binaryninjaui import DockContextHandler
 
 
 from .rsconfig import rs_log
@@ -50,10 +49,9 @@ class SyncStatus(object):
 
 # based on hellodockwidget.py
 # from https://github.com/Vector35/binaryninja-api/
-class SyncDockWidget(QWidget, DockContextHandler):
+class SyncDockWidget(QWidget):
     def __init__(self, parent, name, data):
         QWidget.__init__(self, parent)
-        DockContextHandler.__init__(self, self, name)
         self.actionHandler = UIActionHandler()
         self.actionHandler.setupActionHandler(self)
 
@@ -82,15 +80,6 @@ class SyncDockWidget(QWidget, DockContextHandler):
         layout.addLayout(client_pgm_layout)
         layout.addStretch()
         self.setLayout(layout)
-
-    def shouldBeVisible(self, view_frame):
-        if view_frame is None:
-            return False
-        else:
-            return True
-
-    def contextMenuEvent(self, event):
-        self.m_contextMenuManager.show(self.m_menu, self.actionHandler)
 
     def set_status(self, status):
         if status == SyncStatus.RUNNING:

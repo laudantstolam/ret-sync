@@ -63,5 +63,4 @@ def add_commands(plugin):
 
 
 retsync_plugin = SyncPlugin()
-retsync_plugin.init_widget()
 add_commands(retsync_plugin)

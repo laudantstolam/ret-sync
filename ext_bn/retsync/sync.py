@@ -31,7 +31,6 @@ else:
     from PySide2 import QtCore
     from PySide2.QtCore import Qt
 
-from binaryninjaui import DockHandler
 from binaryninjaui import UIAction, UIActionHandler, UIContext, UIContextNotification
 from binaryninjaui import ViewFrame
 
@@ -435,8 +434,8 @@ class ProgramManager(object):
 
     def list_dyn(self):
         self.opened = {}
-        dock = DockHandler.getActiveDockHandler()
-        view_frame = dock.getViewFrame()
+        ctx = UIContext.activeContext()
+        view_frame = ctx.getCurrentViewFrame()
 
         if view_frame:
             frames = view_frame.parent()
@@ -479,10 +478,16 @@ class SyncPlugin(UIContextNotification):
         self.cb_trace_enabled = False
 
     def init_widget(self):
-        dock_handler = DockHandler.getActiveDockHandler()
-        parent = dock_handler.parent()
+        ctx = UIContext.activeContext()
+        if ctx is None:
+            return
+        parent = ctx.mainWindow()
         self.widget = SyncDockWidget.create_widget("ret-sync plugin", parent)
-        dock_handler.addDockWidget(self.widget, Qt.BottomDockWidgetArea, Qt.Horizontal, True, False)
+        parent.addDockWidget(Qt.BottomDockWidgetArea, self.widget)
+
+    def OnContextOpen(self, context):
+        if self.widget is None:
+            self.init_widget()
 
     def OnAfterOpenFile(self, context, file, frame):
         self.pgm_mgr.add(file.getRawData().file.original_filename)
@@ -591,7 +596,7 @@ class SyncPlugin(UIContextNotification):
 
     def trigger_action(self, action: str):
         handler = UIActionHandler().actionHandlerFromWidget(
-            DockHandler.getActiveDockHandler().parent())
+            UIContext.activeContext().mainWindow())
         handler.executeAction(action)
 
     # check if address is within a valid segment
