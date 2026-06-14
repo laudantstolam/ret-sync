@@ -35,25 +35,55 @@ else:
     from PySide2.QtGui import QKeySequence
 
 from binaryninjaui import UIAction, UIActionHandler
+from binaryninja.plugin import PluginCommand
 
 from .sync import SyncPlugin
 from .retsync.rsconfig import rs_log
 
 
 def add_commands(plugin):
+    # Menu items under Plugins > ret-sync
+    PluginCommand.register("ret-sync\\Enable Sync (Alt+S)",
+        "Start ret-sync listener and accept debugger connection",
+        lambda bv: plugin.cmd_sync())
+    PluginCommand.register("ret-sync\\Disable Sync (Alt+Shift+S)",
+        "Stop ret-sync listener",
+        lambda bv: plugin.cmd_syncoff())
+    PluginCommand.register("ret-sync\\Go (Alt+F5)",
+        "Send go/continue to debugger",
+        lambda bv: plugin.cmd_go())
+    PluginCommand.register("ret-sync\\Step Over (F10)",
+        "Send step-over to debugger",
+        lambda bv: plugin.cmd_so())
+    PluginCommand.register("ret-sync\\Step Into (F11)",
+        "Send step-into to debugger",
+        lambda bv: plugin.cmd_si())
+    PluginCommand.register("ret-sync\\Set Breakpoint (F2)",
+        "Set breakpoint at current cursor in debugger",
+        lambda bv: plugin.cmd_bp())
+    PluginCommand.register("ret-sync\\Set HW Breakpoint (Ctrl+F2)",
+        "Set hardware breakpoint at current cursor",
+        lambda bv: plugin.cmd_hwbp())
+    PluginCommand.register("ret-sync\\Set One-shot Breakpoint (Alt+F3)",
+        "Set one-shot breakpoint at current cursor",
+        lambda bv: plugin.cmd_bp1())
+    PluginCommand.register("ret-sync\\Translate Address (Alt+F2)",
+        "Translate current cursor address for debugger",
+        lambda bv: plugin.cmd_translate())
+
+    # Hotkey bindings
     DbgAction = namedtuple('DbgAction', 'name, key_seq, handler')
     plugin_actions = (
-        DbgAction("SyncEnable", QKeySequence(Qt.ALT | Qt.Key_S), UIAction(plugin.cmd_sync)),
-        DbgAction("SyncDisable", QKeySequence(Qt.ALT | Qt.SHIFT | Qt.Key_S), UIAction(plugin.cmd_syncoff)),
-        DbgAction("SyncGo", QKeySequence(Qt.ALT | Qt.Key_F5), UIAction(plugin.cmd_go)),
-        DbgAction("SyncStepOver", QKeySequence(Qt.Key_F10), UIAction(plugin.cmd_so)),
-        DbgAction("SyncStepInto", QKeySequence(Qt.Key_F11), UIAction(plugin.cmd_si)),
-        DbgAction("SyncTranslate", QKeySequence(Qt.ALT | Qt.Key_F2), UIAction(plugin.cmd_translate)),
-        DbgAction("SyncBp", QKeySequence(Qt.Key_F2), UIAction(plugin.cmd_bp)),
-        DbgAction("SyncHwBp", QKeySequence(Qt.CTRL | Qt.Key_F2), UIAction(plugin.cmd_hwbp)),
-        DbgAction("SyncBpOneShot", QKeySequence(Qt.ALT | Qt.Key_F3), UIAction(plugin.cmd_bp1)),
-        DbgAction("SyncHwBpOneShot", QKeySequence(Qt.CTRL | Qt.Key_F3), UIAction(plugin.cmd_hwbp1))
-        )
+        DbgAction("ret-sync\\Enable Sync (Alt+S)", QKeySequence(Qt.ALT | Qt.Key_S), UIAction(lambda ctx: plugin.cmd_sync())),
+        DbgAction("ret-sync\\Disable Sync (Alt+Shift+S)", QKeySequence(Qt.ALT | Qt.SHIFT | Qt.Key_S), UIAction(lambda ctx: plugin.cmd_syncoff())),
+        DbgAction("ret-sync\\Go (Alt+F5)", QKeySequence(Qt.ALT | Qt.Key_F5), UIAction(lambda ctx: plugin.cmd_go())),
+        DbgAction("ret-sync\\Step Over (F10)", QKeySequence(Qt.Key_F10), UIAction(lambda ctx: plugin.cmd_so())),
+        DbgAction("ret-sync\\Step Into (F11)", QKeySequence(Qt.Key_F11), UIAction(lambda ctx: plugin.cmd_si())),
+        DbgAction("ret-sync\\Set Breakpoint (F2)", QKeySequence(Qt.Key_F2), UIAction(lambda ctx: plugin.cmd_bp())),
+        DbgAction("ret-sync\\Set HW Breakpoint (Ctrl+F2)", QKeySequence(Qt.CTRL | Qt.Key_F2), UIAction(lambda ctx: plugin.cmd_hwbp())),
+        DbgAction("ret-sync\\Set One-shot Breakpoint (Alt+F3)", QKeySequence(Qt.ALT | Qt.Key_F3), UIAction(lambda ctx: plugin.cmd_bp1())),
+        DbgAction("ret-sync\\Translate Address (Alt+F2)", QKeySequence(Qt.ALT | Qt.Key_F2), UIAction(lambda ctx: plugin.cmd_translate())),
+    )
 
     for action in plugin_actions:
         UIAction.registerAction(action.name, action.key_seq)
